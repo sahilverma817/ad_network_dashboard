@@ -1,0 +1,10 @@
+/* LineGraph.module.css */
+
+.LineGraph {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	width: 640px;
+	height: 360px;
+}
