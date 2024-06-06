@@ -1,0 +1,25 @@
+{
+	"short_name": "Ad Network",
+	"name": "Ad Network Dashboard",
+	"icons": [
+		{
+			"src": "icons8-dashboard-layout-pulsar-color-16.png",
+			"sizes": "16x16",
+			"type": "image/png"
+		},
+		{
+			"src": "icons8-dashboard-layout-pulsar-color-32.png",
+			"sizes": "32x32",
+			"type": "image/png"
+		},
+		{
+			"src": "icons8-dashboard-layout-pulsar-color-96.png",
+			"sizes": "96x96",
+			"type": "image/png"
+		}
+	],
+	"start_url": ".",
+	"display": "standalone",
+	"theme_color": "#000000",
+	"background_color": "#ffffff"
+}
