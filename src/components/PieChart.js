@@ -65,7 +65,6 @@ const colors = [
 ];
 
 const renderActiveShape = (props) => {
-	console.log(colors);
 	const RADIAN = Math.PI / 180;
 	const {
 		cx,

@@ -94,7 +94,7 @@ const Dashboard = () => {
 			/>
 			<div className={style.filters}>
 				<div className={style.date_range_custom_container}>
-					<div className={style.date_range_custom_label}>Pick Date Range</div>
+					<div className={style.date_range_custom_label}>Date Range</div>
 					<RangePicker
 						className={style.date_range_custom}
 						onChange={(dates) => setSelectedDateRange(dates)}

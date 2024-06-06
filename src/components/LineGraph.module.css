@@ -8,3 +8,17 @@
 	width: 640px;
 	height: 360px;
 }
+
+@media (max-width: 1400px) {
+	.LineGraph {
+		width: 40vw;
+		height: 360px;
+	}
+}
+
+@media (max-width: 768px) {
+	.LineGraph {
+		width: calc(100vw - 100px);
+		height: 360px;
+	}
+}

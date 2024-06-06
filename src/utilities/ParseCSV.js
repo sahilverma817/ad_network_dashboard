@@ -7,7 +7,6 @@ const ParseCSV = (filePath) => {
 			header: true, // Set to true if your CSV file has a header row
 			dynamicTyping: true,
 			complete: (results) => {
-				console.log("Complete", results.data.length, "records.");
 				resolve(results.data);
 			},
 			error: (error) => {

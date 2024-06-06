@@ -6,3 +6,10 @@
 	width: 640px;
 	height: 540px;
 }
+
+@media (max-width: 640px) {
+	.PieGraph {
+		width: calc(100vw - 100px);
+		height: 400px;
+	}
+}

@@ -6,3 +6,10 @@
 	width: 960px;
 	height: 360px;
 }
+
+@media (max-width: 960px) {
+	.BarGraph {
+		width: calc(100vw - 100px);
+		height: 360px;
+	}
+}

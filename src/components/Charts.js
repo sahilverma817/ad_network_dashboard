@@ -59,7 +59,6 @@ const ChartsByCountry = ({ advertiserDataByCountry }) => {
 	}, {});
 	data = Object.values(data);
 
-	console.log(data);
 
 	return (
 		<div className={styles.ChartsByCountry}>
