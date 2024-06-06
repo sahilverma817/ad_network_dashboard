@@ -5,7 +5,6 @@ import {
 	Sector,
 	ResponsiveContainer,
 	Tooltip,
-	Legend,
 	Cell,
 } from "recharts";
 import styles from "./PieChart.module.css";
