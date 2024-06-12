@@ -9,6 +9,21 @@ import dayjs from "dayjs";
 
 const { RangePicker } = DatePicker;
 
+const setLocalStorage = (key, value) => {
+	localStorage.setItem(key, JSON.stringify(value));
+};
+
+const getLocalStorage = (key) => {
+	const value = localStorage.getItem(key);
+	return value ? JSON.parse(value) : null;
+};
+
+const dateFormats = {
+	Daily: "YYYY-MM-DD",
+	Weekly: "YYYY-ww",
+	Monthly: "YYYY-MM",
+};
+
 const Dashboard = () => {
 	const advertiserData = useRef([]);
 	const advertiserDataByCountry = useRef([]);
@@ -17,6 +32,7 @@ const Dashboard = () => {
 
 	const [selectedAdvertisers, setSelectedAdvertisers] = useState([]);
 	const [selectedDateRange, setSelectedDateRange] = useState([]);
+	const [selectedDatePeriod, setSelectedDatePeriod] = useState("Daily");
 
 	const [filteredAdvertiserData, setFilteredAdvertiserData] = useState([]);
 	const [filteredAdvertiserDataByCountry, setFilteredAdvertiserDataByCountry] =
@@ -44,8 +60,29 @@ const Dashboard = () => {
 				uniqueAdvertisers.current = _uniqueAdvertisers;
 				dateRange.current = [minDate, maxDate];
 
-				setSelectedAdvertisers(_uniqueAdvertisers);
-				setSelectedDateRange([minDate, maxDate]);
+				const cachedSelectedAdvertisers = getLocalStorage(
+					"selectedAdvertisers"
+				);
+				const cachedSelectedDateRange = getLocalStorage("selectedDateRange");
+				const cachedSelectedDatePeriod = getLocalStorage("selectedDatePeriod");
+
+				// convert cached date range to moment objects
+				if (cachedSelectedDateRange) {
+					cachedSelectedDateRange[0] = moment(cachedSelectedDateRange[0]);
+					cachedSelectedDateRange[1] = moment(cachedSelectedDateRange[1]);
+				}
+
+				setSelectedAdvertisers(
+					cachedSelectedAdvertisers
+						? cachedSelectedAdvertisers
+						: _uniqueAdvertisers
+				);
+				setSelectedDateRange(
+					cachedSelectedDateRange ? cachedSelectedDateRange : [minDate, maxDate]
+				);
+				setSelectedDatePeriod(
+					cachedSelectedDatePeriod ? cachedSelectedDatePeriod : "Daily"
+				);
 			} catch (error) {
 				console.error("Error fetching or parsing CSV files", error);
 			}
@@ -68,14 +105,44 @@ const Dashboard = () => {
 				: dateRange.current[1]
 			: dateRange.current[1];
 
-		const _filteredAdvertiserData = advertiserData.current.filter((item) => {
-			const date = moment(item.Date);
-			return (
-				selectedAdvertisers.includes(item.Advertiser) &&
-				date >= startDate &&
-				date <= endDate
-			);
-		});
+		// {
+		//     "Advertiser": "Syscox",
+		//     "Date": "2016-02-01",
+		//     "Impressions": 21365,
+		//     "Clicks": 268,
+		//     "CTR (in %)": 1.25
+		// }
+
+		var _filteredAdvertiserData = advertiserData.current
+			.filter((item) => {
+				const date = moment(item.Date);
+				return (
+					selectedAdvertisers.includes(item.Advertiser) &&
+					date >= startDate &&
+					date <= endDate
+				);
+			})
+			.reduce((acc, item) => {
+				const date = moment(item.Date).format(dateFormats[selectedDatePeriod]);
+				const key = `${item.Advertiser}-${date}`; // Combined key of advertiser and date
+				if (!acc[key]) {
+					acc[key] = {
+						Advertiser: item.Advertiser,
+						Date: date,
+						Impressions: 0,
+						Clicks: 0,
+						CTR: 0,
+					};
+				}
+				acc[key].Impressions += item.Impressions;
+				acc[key].Clicks += item.Clicks;
+				acc[key].CTR = acc[key].Clicks / acc[key].Impressions;
+				return acc;
+			}, {});
+
+		_filteredAdvertiserData = Object.values(_filteredAdvertiserData);
+
+		console.log("_filteredAdvertiserData", _filteredAdvertiserData);
 
 		const _filteredAdvertiserDataByCountry =
 			advertiserDataByCountry.current.filter((item) =>
@@ -84,7 +151,25 @@ const Dashboard = () => {
 
 		setFilteredAdvertiserData(_filteredAdvertiserData);
 		setFilteredAdvertiserDataByCountry(_filteredAdvertiserDataByCountry);
-	}, [selectedAdvertisers, selectedDateRange]);
+	}, [selectedAdvertisers, selectedDateRange, selectedDatePeriod]);
+
+	const changeSelectedRange = (dates) => {
+		console.log("changeSelectedRange", dates);
+		setLocalStorage("selectedDateRange", dates);
+		setSelectedDateRange(dates);
+	};
+
+	const changeSelectedPeriod = (period) => {
+		console.log("changeSelectedPeriod", period);
+		setLocalStorage("selectedDatePeriod", period);
+		setSelectedDatePeriod(period);
+	};
+
+	const changeSelectedAdvertisers = (advertisers) => {
+		console.log("changeSelectedAdvertisers", advertisers);
+		setLocalStorage("selectedAdvertisers", advertisers);
+		setSelectedAdvertisers(advertisers);
+	};
 
 	return (
 		<div className={style.Dashboard}>
@@ -97,7 +182,7 @@ const Dashboard = () => {
 					<div className={style.date_range_custom_label}>Date Range</div>
 					<RangePicker
 						className={style.date_range_custom}
-						onChange={(dates) => setSelectedDateRange(dates)}
+						onChange={changeSelectedRange}
 						format="YYYY-MM-DD"
 						disabledDate={(current) =>
 							current &&
@@ -108,6 +193,22 @@ const Dashboard = () => {
 						defaultPickerValue={dateRange.current.map((date) => dayjs(date))}
 					/>
 				</div>
+				<div className={style.date_ranges_period_container}>
+					<div className={style.date_ranges_period_label}>
+						Time Period Selected
+					</div>
+					{/* Can have period like monthly weekly daily which is default */}
+					<Select
+						className={style.date_ranges_period}
+						value={selectedDatePeriod}
+						options={[
+							{ label: "Monthly", value: "Monthly" },
+							{ label: "Weekly", value: "Weekly" },
+							{ label: "Daily", value: "Daily" },
+						]}
+						onChange={changeSelectedPeriod}
+					/>
+				</div>
 				<div className={style.select_custom_container}>
 					<div className={style.select_custom_label}>Select Advertisers</div>
 					<Select
@@ -115,7 +216,7 @@ const Dashboard = () => {
 						mode="multiple"
 						placeholder="Select advertisers"
 						value={selectedAdvertisers}
-						onChange={setSelectedAdvertisers}
+						onChange={changeSelectedAdvertisers}
 						options={uniqueAdvertisers.current.map((advertiser) => ({
 							label: advertiser,
 							value: advertiser,
